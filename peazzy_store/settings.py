@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts',
     'store',
     'carts',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -150,3 +151,5 @@ EMAIL_USE_TLS = True
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MIDTRANS_SERVER_KEY = 'SB-Mid-server-k3MqmB3_nKFoAoztKnt9Hv7U'
