@@ -11,11 +11,23 @@
         <div class="row no-gutters">
             <aside class="col-md-6">
     <article class="gallery-wrap"> 
-        <div class="img-big-wrap">
-           <a href="#"><img src="{{ single_product.images.url }}"></a>
+        <div class="img-big-wrap mainImages">
+           <center><img src="{{ single_product.images.url }}"></center>
         </div> <!-- img-big-wrap.// -->
         
     </article> <!-- gallery-wrap .end// -->
+    <ul class="thumb">
+        <li>
+            <a href="{{ single_product.images.url }}" target="mainImages">
+                <img src="{{ single_product.images.url }}" alt="Product image">
+            </a>
+            {% for a in product_gallery %}
+            <a href="{{ a.image.url }}" target="mainImages">
+                <img src="{{ a.image.url }}" alt="Product image">
+            </a>
+            {% endfor %}
+        </li>
+    </ul>
         </aside>
         <main class="col-md-6 border-left">
           <form action="{% url 'add_cart' single_product.id %}" method="POST">
