@@ -1,12 +1,14 @@
 
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render,get_object_or_404
 from django.contrib.auth.decorators import login_required
+
 from carts.views import _cart_id
 from carts.models import CartItem,Cart
-from .models import Account
+from .models import Account, UserProfile
 from django.contrib import messages, auth
-from .forms import RegistrationForm
+from .forms import RegistrationForm, UserForm, UserProfileForm
+from orders.models import Order
 #VERIFIKASI
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
@@ -29,7 +31,13 @@ def register(request):
             user = Account.objects.create_user(first_name=first_name, last_name=last_name, email=email, username=username, password=password)
             user.phone_number = phone_number
             user.save()
+            
 
+            profile = UserProfile()
+            profile.user_id = user.id
+            profile.profil_picture = 'default/default-user.png'
+            profile.save()
+            
             #AKTIVASI USER
             current_site = get_current_site(request)
             mail_subject = 'Harap Aktivasi Akun terlebih dahulu'
@@ -132,9 +140,14 @@ def activate(request, uidb64, token):
         messages.error(request, 'aktivasi link tidak valid')
         return redirect('register')
 
-@login_required
+@login_required(login_url='login')
 def dashboard(request):
-    return render(request, 'accounts/dashboard.html')
+    orders = Order.objects.order_by('-created_at').filter(user_id=request.user.id, is_ordered=True)
+    orders_count = orders.count()
+    ctx = {
+        'orders_count':orders_count,
+    }
+    return render(request, 'accounts/dashboard.html', ctx)
 
 def forgotpassword(request):
     if request.method == "POST":
@@ -198,3 +211,33 @@ def resetPassword(request):
 
     else:
         return render(request, 'accounts/resetPassword.html')
+
+def my_orders(request):
+    orders = Order.objects.filter(user=request.user, is_ordered=True).order_by('-created_at')
+    ctx = {
+        'orders':orders,
+    }
+
+    return render(request, 'accounts/my_orders.html',ctx)
+
+def edit_profile(request):
+    userprofile = get_object_or_404(UserProfile, user=request.user)
+    if request.method == 'POST':
+        user_form = UserForm(request.POST, instance=request.user)
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=userprofile)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Profil Di updated')
+            return redirect('edit_profile')
+    else:
+        user_form = UserForm(instance=request.user)
+        profile_form = UserProfileForm(instance=userprofile)
+    ctx = {
+        'user_form': user_form,
+        'profile_form':profile_form,
+        'userprofile': userprofile,
+    }
+
+            
+    return render(request, 'accounts/edit_profile.html', ctx)

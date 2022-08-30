@@ -1,5 +1,8 @@
+from ast import Try
+from distutils.command.upload import upload
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+
 
 # Create your models here.
 class MyAccountManager(BaseUserManager):
@@ -70,3 +73,19 @@ class Account(AbstractBaseUser):
         return True
 
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(Account, on_delete=models.CASCADE)
+    address_line_1 = models.CharField(max_length=100, blank=True)
+    address_line_2 = models.CharField(max_length=100, blank=True)
+    profil_picture  = models.ImageField(blank=True, upload_to='userprofile/')
+    city = models.CharField(blank=True, max_length=30)
+    state = models.CharField(blank=True, max_length=30)
+    country = models.CharField(blank=True, max_length= 30)
+
+    def __str__(self):
+        return self.user.first_name
+
+    def full_address(self):
+        return f'{self.address_line_1} {self.address_line_2}'
+    
+    
